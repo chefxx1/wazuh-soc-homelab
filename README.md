@@ -46,6 +46,22 @@ A fully functional Security Operations Center (SOC) homelab built to simulate re
 
 ---
 
+## Screenshots
+
+**Custom rule 100002 firing on encoded PowerShell (T1059.001, level 12)**
+
+![Rule 100002 alerts](dashboards/screenshots/rule100002-T1059001-custom.png)
+
+**Rule 92026: reg.exe used to dump the SAM hive (T1003, level 14)**
+
+![Rule 92026 alert](dashboards/screenshots/rule92026-sam-dump.png)
+
+**Endpoint overview: top MITRE ATT&CK tactics, events over time, and compliance scans**
+
+![Endpoint overview](dashboards/screenshots/mitre-attack-heatmap.png)
+
+---
+
 ## Custom Detection Rule
 
 Written in `detection-rules/local_rules.xml` — maps encoded PowerShell execution to MITRE T1059.001:
@@ -83,11 +99,9 @@ Written in `detection-rules/local_rules.xml` — maps encoded PowerShell executi
 ```
 wazuh-soc-homelab/
 ├── detection-rules/        # Custom Wazuh XML rules
-├── sysmon/                 # Sysmon config
 ├── attack-simulations/     # PowerShell attack scripts (per MITRE technique)
 ├── dashboards/screenshots/ # Wazuh dashboard evidence
-├── incident-reports/       # NIST 800-61 formatted IR reports
-└── setup-guides/           # Lab reproduction guides
+└── incident-reports/       # NIST 800-61 formatted IR reports
 ```
 
 ---
@@ -102,9 +116,13 @@ Three structured incident reports following NIST SP 800-61 format:
 
 ---
 
-## Setup
+## How it works
 
-See [setup-guides/](setup-guides/) for full reproduction steps including Docker stack deployment, Sysmon installation, and agent enrollment.
+The Wazuh stack (manager, indexer, and dashboard, version 4.9.2) runs in Docker on a Windows 11 machine. A Windows 11 VM in VirtualBox is the victim endpoint. It runs Sysmon v15.22 with the SwiftOnSecurity config, and the Wazuh agent forwards its logs to the manager, including the Microsoft-Windows-Sysmon/Operational channel.
+
+## A problem I ran into
+
+At first the agent was connected and events were flowing, but I got no process creation alerts. The Sysmon event channel was not in the agent config by default. Adding one `localfile` block for it fixed that. Lesson: check your log sources before trusting your detections.
 
 ---
 
